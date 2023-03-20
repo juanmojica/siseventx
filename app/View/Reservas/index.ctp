@@ -1,7 +1,7 @@
 <?php 
     $controllerName = $this->request->params['controller'];
     
-    $novoButton = $this->Js->link('Novo', '/' . $controllerName . '/add', array(
+    $novoButton = $this->Js->link('Novo', '/' . $controllerName . '/listarEspacos', array(
         'class' => 'btn btn-success float-right', 
         'update' => '#content',
         'evalScripts' => true,
@@ -15,7 +15,9 @@
         )
     ));
 
-    $searchFields = $this->Form->input('Espaco.nome_filtrar', array(
+    $reportButton = $this->Html->link('Imprimir', '/' . $controllerName . '/report', array('class' => 'btn btn-secondary float-right mr-2', 'target' => '_blank'));
+
+    $searchFields = $this->Form->input('Reserva.nome_filtrar', array(
         'required' => false,
         'label' => array('text' => 'Nome', 'class' => 'sr-only'),
         'class' => 'form-control mb-2 mr-sm-2 form-sm',
@@ -23,7 +25,7 @@
         'placeholder' => 'Nome...'
     ));
 
-    $filtro = $this->Form->create('Espaco', array('class' => 'form-inline '));
+    $filtro = $this->Form->create('Reservas', array('class' => 'form-inline '));
     $filtro .= $searchFields; 
     $filtro .= $this->Js->submit('Filtrar', array(
         'class' => 'btn btn-primary mb-2', 
@@ -45,35 +47,32 @@
 
     $filtroBar = $this->Html->div('row mb-3 mt-3', 
         $this->Html->div('col-md-6', $filtro) . 
-        $this->Html->div('col-md-6', $novoButton)
+        $this->Html->div('col-md-6', $novoButton . $reportButton)
     );
 
     $titulos = array(
-        array('Nome' => array('class' => 'col-md-2')),
-        array('Endereço' => array('class' => 'col-md-2')),
-        array('Telefone' => array('class' => 'col-md-2')),
-        array('Limite de Participantes' => array('class' => 'col-md-1')),
-        array('Hora de Início' => array('class' => 'col-md-1')),
-        array('Hora de Encerramento' => array('class' => 'col-md-1')),
-        array('Valor por Hora' => array('class' => 'col-md-1')),
-        array('Ações' => array('class' => 'col-md-2'))    
+        array('Espaço' => array('class' => 'col-md-1')),
+        array('Endereço' => array('class' => 'col-md-1')),
+        array('Data Início' => array('class' => 'col-md-1')),    
+        array('Hora Início' => array('class' => 'col-md-1')),    
+        array('Data Final' => array('class' => 'col-md-1')),    
+        array('Hora Final' => array('class' => 'col-md-1')),    
+        array('Cliente' => array('class' => 'col-md-2')),    
+        array('CPF' => array('class' => 'col-md-1')),    
+        array('Valor' => array('class' => 'col-md-1')),    
+        array('Ações' => array('class' => 'col-md-2')),    
     );
 
     $tableHeaders = $this->Html->tableHeaders($titulos, array('class' => 'text-center'));
     $header = $this->Html->tag('thead', $tableHeaders);
 
-    $dadosEspacos = array();
+    $dadosReservas = array();
 
-    foreach ($espacos as $espaco) {
-
-        $endereco = "{$espaco['Endereco']['logradouro']}, 
-            {$espaco['Endereco']['numero']}, 
-            {$espaco['Endereco']['bairro']}, 
-            {$espaco['Endereco']['cidade']}/{$espaco['Endereco']['Estado']['sigla']}";
+    foreach ($reservas as $reserva) {
 
         $viewLink = $this->Js->link(
             $this->Html->tag('i', '', array('class' => 'fa-solid fa-eye btn btn-sm btn-primary')), 
-            '/espacos/view/' . $espaco['Espaco']['id'], 
+            '/' . $controllerName . '/view/' . $reserva['Reserva']['id'], 
             array(
                 'update' => '#content', 
                 'escape' => false, 
@@ -92,7 +91,7 @@
 
         $editLink = $this->Js->link(
             $this->Html->tag('i', '', array('class' => 'fa-solid fa-pen-to-square btn btn-sm btn-info')), 
-            '/espacos/edit/' . $espaco['Espaco']['id'], 
+            '/' . $controllerName . '/edit/' . $reserva['Reserva']['id'], 
             array(
                 'update' => '#content', 
                 'escape' => false, 
@@ -111,7 +110,7 @@
         
         $deleteLink = $this->Js->link(
             $this->Html->tag('i', '', array('class' => 'fa-solid fa-trash-can btn btn-sm btn-danger')), 
-            '/espacos/delete/' . $espaco['Espaco']['id'], 
+            '/' . $controllerName . '/delete/' . $reserva['Reserva']['id'], 
             array(
                 'update' => '#content', 
                 'confirm' => 'Confirmar Exclusão?',
@@ -128,20 +127,30 @@
                 )
             )
         );
+
+        $endereco = "{$reserva['Espaco']['Endereco']['logradouro']}, 
+        {$reserva['Espaco']['Endereco']['numero']}, 
+        {$reserva['Espaco']['Endereco']['bairro']}, 
+        {$reserva['Espaco']['Endereco']['cidade']}/{$reserva['Espaco']['Endereco']['Estado']['sigla']}";
+
+        $dataInicio = date('d/m/Y', strtotime($reserva['Reserva']['data_inicio']));
+        $dataFim = date('d/m/Y', strtotime($reserva['Reserva']['data_fim']));
         
-        $dadosEspacos[] = array(
-            $espaco['Espaco']['nome'],
+        $dadosReservas[] = array(
+            $reserva['Espaco']['nome'],
             $endereco,
-            array($espaco['Espaco']['telefone'], array('class' => 'text-center')),
-            array($espaco['Espaco']['limite_participantes'], array('class' => 'text-center')),
-            array($espaco['Espaco']['hora_inicio'], array('class' => 'text-center')),
-            array($espaco['Espaco']['hora_fim'], array('class' => 'text-center')),
-            array('R$ ' . $espaco['Espaco']['valor_hora'], array('class' => 'text-center')),
+            array($dataInicio, array('class' => 'text-center')),
+            array($reserva['Reserva']['hora_inicio'], array('class' => 'text-center')),
+            array($dataFim, array('class' => 'text-center')),
+            array($reserva['Reserva']['hora_fim'], array('class' => 'text-center')),
+            $reserva['Cliente']['nome'],
+            array($reserva['Cliente']['cpf'], array('class' => 'text-center')),
+            array('R$ ' . $reserva['Reserva']['valor'], array('class' => 'text-center')),
             array($viewLink .' '. $editLink . ' ' . $deleteLink, array('class' => 'text-center'))
         ); 
     }
     
-    $tableCells = $this->Html->tableCells($dadosEspacos);
+    $tableCells = $this->Html->tableCells($dadosReservas);
     $table = $this->Html->div('table-responsive', 
         $this->Html->tag('table', $header . $tableCells, array('class' => 'table table-striped table-sm')) 
     );
@@ -150,7 +159,7 @@
     echo $this->Flash->render('success'); 
 
     echo $filtroBar;
-    echo $this->Html->tag('h2', 'Espaços', array('class' => 'my-2'));
+    echo $this->Html->tag('h2', 'Reservas', array('class' => 'my-2'));
     echo $table;
 
     $this->Paginator->options(array('update' => '#content'));

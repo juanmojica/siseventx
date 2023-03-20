@@ -4,6 +4,10 @@
 
     $this->assign('title', 'Cadastrar Espaço');
 
-    $this->assign('formFields', '');
+    $formFields =  $this->Form->create('Espaco', array(
+        'class' => 'form-row my-3',
+    )); 
+
+    $this->assign('formFields', $formFields);
 
 ?>

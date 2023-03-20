@@ -50,6 +50,27 @@
 							<li class="nav-item">
 								<?php 
 									echo $this->Js->link(
+										$this->Html->tag('i', '', array('class' => 'fa-brands fa-airbnb')) . ' Reservas',
+										'/reservas', array(
+											'update' => '#content', 
+											'escape' => false, 
+											'class' => 'nav-link',
+											'evalScripts' => true,
+											'before' => $this->Js->get('#busy-indicator')->effect(
+												'fadeIn',
+												array('buffer' => false)
+											),
+											'complete' => $this->Js->get('#busy-indicator')->effect(
+												'fadeOut',
+												array('buffer' => false)
+											)
+										)
+									) 
+								?>
+							</li>
+							<li class="nav-item">
+								<?php 
+									echo $this->Js->link(
 										$this->Html->tag('i', '', array('class' => 'fa-solid fa-hotel')) . ' Espaços',
 										'/espacos', array(
 											'update' => '#content', 
@@ -71,8 +92,8 @@
 							<li class="nav-item">
 								<?php 
 									echo $this->Js->link(
-										$this->Html->tag('i', '', array('class' => 'fa-solid fa-table-list')) . ' Estruturas Adicionais',
-										'/espacos', array(
+										$this->Html->tag('i', '', array('class' => 'fa-solid fa-table-list')) . ' Estruturas',
+										'/estruturas', array(
 											'update' => '#content', 
 											'escape' => false, 
 											'class' => 'nav-link',
@@ -93,7 +114,7 @@
 								<?php 
 									echo $this->Js->link( 
 										$this->Html->tag('i', '', array('class' => 'fa-solid fa-people-carry-box')) . ' Serviços',
-										'/espacos', array(
+										'/servicos', array(
 											'update' => '#content', 
 											'escape' => false, 
 											'class' => 'nav-link',
@@ -121,8 +142,6 @@
 						<?php echo $this->Flash->render(); ?>
 
 						<?php echo $this->fetch('content'); ?>
-
-						<?php echo $this->element('sql_dump'); ?> 
 						
 					</div>
 				</main>

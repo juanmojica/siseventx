@@ -1,19 +1,4 @@
-<?php 
-    $controllerName = $this->request->params['controller'];
-    
-    $novoButton = $this->Js->link('Novo', '/' . $controllerName . '/add', array(
-        'class' => 'btn btn-success float-right', 
-        'update' => '#content',
-        'evalScripts' => true,
-        'before' => $this->Js->get('#busy-indicator')->effect(
-            'fadeIn',
-            array('buffer' => false)
-        ),
-        'complete' => $this->Js->get('#busy-indicator')->effect(
-            'fadeOut',
-            array('buffer' => false)
-        )
-    ));
+<?php
 
     $searchFields = $this->Form->input('Espaco.nome_filtrar', array(
         'required' => false,
@@ -23,10 +8,11 @@
         'placeholder' => 'Nome...'
     ));
 
-    $filtro = $this->Form->create('Espaco', array('class' => 'form-inline '));
+    $filtro = $this->Form->create('Reserva', array('class' => 'form-inline '));
     $filtro .= $searchFields; 
     $filtro .= $this->Js->submit('Filtrar', array(
         'class' => 'btn btn-primary mb-2', 
+        'action' => '/reservas/listarEspacos', 
         'div' => false, 
         'update' => '#content',
         'escape' => false, 
@@ -44,19 +30,18 @@
     $filtro .= $this->Form->end();
 
     $filtroBar = $this->Html->div('row mb-3 mt-3', 
-        $this->Html->div('col-md-6', $filtro) . 
-        $this->Html->div('col-md-6', $novoButton)
+        $this->Html->div('col-md-6', $filtro) 
     );
 
     $titulos = array(
         array('Nome' => array('class' => 'col-md-2')),
-        array('Endereço' => array('class' => 'col-md-2')),
+        array('Endereço' => array('class' => 'col-md-3')),
         array('Telefone' => array('class' => 'col-md-2')),
         array('Limite de Participantes' => array('class' => 'col-md-1')),
         array('Hora de Início' => array('class' => 'col-md-1')),
         array('Hora de Encerramento' => array('class' => 'col-md-1')),
         array('Valor por Hora' => array('class' => 'col-md-1')),
-        array('Ações' => array('class' => 'col-md-2'))    
+        array('Ações' => array('class' => 'col-md-1'))    
     );
 
     $tableHeaders = $this->Html->tableHeaders($titulos, array('class' => 'text-center'));
@@ -65,19 +50,19 @@
     $dadosEspacos = array();
 
     foreach ($espacos as $espaco) {
-
-        $endereco = "{$espaco['Endereco']['logradouro']}, 
-            {$espaco['Endereco']['numero']}, 
-            {$espaco['Endereco']['bairro']}, 
-            {$espaco['Endereco']['cidade']}/{$espaco['Endereco']['Estado']['sigla']}";
+        
+        $endereco = "{$espaco['Espaco']['Endereco']['logradouro']}, 
+            {$espaco['Espaco']['Endereco']['numero']}, 
+            {$espaco['Espaco']['Endereco']['bairro']}, 
+            {$espaco['Espaco']['Endereco']['cidade']}/{$espaco['Espaco']['Endereco']['Estado']['sigla']}";
 
         $viewLink = $this->Js->link(
-            $this->Html->tag('i', '', array('class' => 'fa-solid fa-eye btn btn-sm btn-primary')), 
-            '/espacos/view/' . $espaco['Espaco']['id'], 
+            $this->Html->tag('i', '', array('class' => 'fa-solid fa-check-to-slot btn btn-sm btn-success')), 
+            '/reservas/add/' . $espaco['Espaco']['id'], 
             array(
                 'update' => '#content', 
                 'escape' => false, 
-                'title' => 'Ver Detalhes',
+                'title' => 'Iniciar Reserva',
                 'evalScripts' => true,
                 'before' => $this->Js->get('#busy-indicator')->effect(
                     'fadeIn',
@@ -90,45 +75,6 @@
             )
         );
 
-        $editLink = $this->Js->link(
-            $this->Html->tag('i', '', array('class' => 'fa-solid fa-pen-to-square btn btn-sm btn-info')), 
-            '/espacos/edit/' . $espaco['Espaco']['id'], 
-            array(
-                'update' => '#content', 
-                'escape' => false, 
-                'title' => 'Editar',
-                'evalScripts' => true,
-                'before' => $this->Js->get('#busy-indicator')->effect(
-                    'fadeIn',
-                    
-                ),
-                'complete' => $this->Js->get('#busy-indicator')->effect(
-                    'fadeOut',
-                    
-                )
-            )
-        );
-        
-        $deleteLink = $this->Js->link(
-            $this->Html->tag('i', '', array('class' => 'fa-solid fa-trash-can btn btn-sm btn-danger')), 
-            '/espacos/delete/' . $espaco['Espaco']['id'], 
-            array(
-                'update' => '#content', 
-                'confirm' => 'Confirmar Exclusão?',
-                'escape' => false, 
-                'title' => 'Excluir',
-                'evalScripts' => true,
-                'before' => $this->Js->get('#busy-indicator')->effect(
-                    'fadeIn',
-                    
-                ),
-                'complete' => $this->Js->get('#busy-indicator')->effect(
-                    'fadeOut',
-                    
-                )
-            )
-        );
-        
         $dadosEspacos[] = array(
             $espaco['Espaco']['nome'],
             $endereco,
@@ -137,7 +83,7 @@
             array($espaco['Espaco']['hora_inicio'], array('class' => 'text-center')),
             array($espaco['Espaco']['hora_fim'], array('class' => 'text-center')),
             array('R$ ' . $espaco['Espaco']['valor_hora'], array('class' => 'text-center')),
-            array($viewLink .' '. $editLink . ' ' . $deleteLink, array('class' => 'text-center'))
+            array($viewLink, array('class' => 'text-center'))
         ); 
     }
     
@@ -150,7 +96,7 @@
     echo $this->Flash->render('success'); 
 
     echo $filtroBar;
-    echo $this->Html->tag('h2', 'Espaços', array('class' => 'my-2'));
+    echo $this->Html->tag('h2', 'Escolha o espaço a ser reservado', array('class' => 'my-2'));
     echo $table;
 
     $this->Paginator->options(array('update' => '#content'));
@@ -176,7 +122,7 @@
     echo $paginateBar;
 
     $this->Js->buffer('$(".active").removeClass("active");');
-    $this->Js->buffer('$(".nav-item a[href$=\'' . $controllerName . '\']").addClass("active");');
+    $this->Js->buffer('$(".nav-item a[href$=\'reservas\']").addClass("active");');
     
     if ($this->request->is('ajax')) {
         echo $this->Js->writeBuffer();

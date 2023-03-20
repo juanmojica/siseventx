@@ -15,7 +15,7 @@
         )
     ));
 
-    $searchFields = $this->Form->input('Espaco.nome_filtrar', array(
+    $searchFields = $this->Form->input('Estrutura.nome_filtrar', array(
         'required' => false,
         'label' => array('text' => 'Nome', 'class' => 'sr-only'),
         'class' => 'form-control mb-2 mr-sm-2 form-sm',
@@ -23,7 +23,7 @@
         'placeholder' => 'Nome...'
     ));
 
-    $filtro = $this->Form->create('Espaco', array('class' => 'form-inline '));
+    $filtro = $this->Form->create('Estruturas', array('class' => 'form-inline '));
     $filtro .= $searchFields; 
     $filtro .= $this->Js->submit('Filtrar', array(
         'class' => 'btn btn-primary mb-2', 
@@ -49,31 +49,22 @@
     );
 
     $titulos = array(
-        array('Nome' => array('class' => 'col-md-2')),
-        array('Endereço' => array('class' => 'col-md-2')),
-        array('Telefone' => array('class' => 'col-md-2')),
-        array('Limite de Participantes' => array('class' => 'col-md-1')),
-        array('Hora de Início' => array('class' => 'col-md-1')),
-        array('Hora de Encerramento' => array('class' => 'col-md-1')),
-        array('Valor por Hora' => array('class' => 'col-md-1')),
-        array('Ações' => array('class' => 'col-md-2'))    
+        array('Nome' => array('class' => 'col-md-6')),
+        array('Tipo' => array('class' => 'col-md-2')),    
+        array('Valor' => array('class' => 'col-md-2')),    
+        array('Ações' => array('class' => 'col-md-2')),    
     );
 
     $tableHeaders = $this->Html->tableHeaders($titulos, array('class' => 'text-center'));
     $header = $this->Html->tag('thead', $tableHeaders);
 
-    $dadosEspacos = array();
+    $dadosEstruturas = array();
 
-    foreach ($espacos as $espaco) {
-
-        $endereco = "{$espaco['Endereco']['logradouro']}, 
-            {$espaco['Endereco']['numero']}, 
-            {$espaco['Endereco']['bairro']}, 
-            {$espaco['Endereco']['cidade']}/{$espaco['Endereco']['Estado']['sigla']}";
+    foreach ($estruturas as $estrutura) {
 
         $viewLink = $this->Js->link(
             $this->Html->tag('i', '', array('class' => 'fa-solid fa-eye btn btn-sm btn-primary')), 
-            '/espacos/view/' . $espaco['Espaco']['id'], 
+            '/' . $controllerName . '/view/' . $estrutura['Estrutura']['id'], 
             array(
                 'update' => '#content', 
                 'escape' => false, 
@@ -92,7 +83,7 @@
 
         $editLink = $this->Js->link(
             $this->Html->tag('i', '', array('class' => 'fa-solid fa-pen-to-square btn btn-sm btn-info')), 
-            '/espacos/edit/' . $espaco['Espaco']['id'], 
+            '/' . $controllerName . '/edit/' . $estrutura['Estrutura']['id'], 
             array(
                 'update' => '#content', 
                 'escape' => false, 
@@ -111,7 +102,7 @@
         
         $deleteLink = $this->Js->link(
             $this->Html->tag('i', '', array('class' => 'fa-solid fa-trash-can btn btn-sm btn-danger')), 
-            '/espacos/delete/' . $espaco['Espaco']['id'], 
+            '/' . $controllerName . '/delete/' . $estrutura['Estrutura']['id'], 
             array(
                 'update' => '#content', 
                 'confirm' => 'Confirmar Exclusão?',
@@ -128,20 +119,20 @@
                 )
             )
         );
+
+        if ($estrutura['Estrutura']['tipo'] == 'BASICO') {
+            $estrutura['Estrutura']['tipo'] = 'BÁSICO';
+        }
         
-        $dadosEspacos[] = array(
-            $espaco['Espaco']['nome'],
-            $endereco,
-            array($espaco['Espaco']['telefone'], array('class' => 'text-center')),
-            array($espaco['Espaco']['limite_participantes'], array('class' => 'text-center')),
-            array($espaco['Espaco']['hora_inicio'], array('class' => 'text-center')),
-            array($espaco['Espaco']['hora_fim'], array('class' => 'text-center')),
-            array('R$ ' . $espaco['Espaco']['valor_hora'], array('class' => 'text-center')),
+        $dadosEstruturas[] = array(
+            $estrutura['Estrutura']['nome'],
+            array($estrutura['Estrutura']['tipo'], array('class' => 'text-center')),
+            array('R$ ' . $estrutura['Estrutura']['valor'], array('class' => 'text-center')),
             array($viewLink .' '. $editLink . ' ' . $deleteLink, array('class' => 'text-center'))
         ); 
     }
     
-    $tableCells = $this->Html->tableCells($dadosEspacos);
+    $tableCells = $this->Html->tableCells($dadosEstruturas);
     $table = $this->Html->div('table-responsive', 
         $this->Html->tag('table', $header . $tableCells, array('class' => 'table table-striped table-sm')) 
     );
@@ -150,7 +141,7 @@
     echo $this->Flash->render('success'); 
 
     echo $filtroBar;
-    echo $this->Html->tag('h2', 'Espaços', array('class' => 'my-2'));
+    echo $this->Html->tag('h2', 'Estruturas', array('class' => 'my-2'));
     echo $table;
 
     $this->Paginator->options(array('update' => '#content'));

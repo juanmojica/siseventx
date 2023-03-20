@@ -1,7 +1,7 @@
 <?php
 
     $controllerName = $this->request->params['controller'];
-
+   
     $actionName = $this->request->params['action'];
 
     $form = $this->fetch('formFields');
@@ -79,8 +79,9 @@
 <script>
     $(document).ready(function() {
         $('.telefone').mask('(00) 0 0000-0000');
-        $('.valor_hora').mask('#.##0,00', {reverse: true});
+        $('.valor').mask('#.##0,00', {reverse: true});
         $('.estado').mask('AA');
         $('.cep').mask('00000-000');
+
     });
 </script>
