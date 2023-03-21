@@ -4,6 +4,7 @@ App::uses('AppController', 'Controller');
 
 class ReservasController extends AppController
 {
+
     protected $paginate = array(
         'fields' => array(
             'id',
@@ -40,7 +41,7 @@ class ReservasController extends AppController
         'limit' => 30,
         'order' => array(
             'Espaco.nome' => 'asc', 
-            'Reserva.data_inicio' => 'asc'
+            'Reserva.data_reserva' => 'asc'
         )    
     );
     
@@ -180,11 +181,23 @@ class ReservasController extends AppController
     {
         try {
 
-            $this->request->data = $this->getEspaco($id);
+            $reserva = $this->request->data = $this->getReserva($id);
 
-            $estados = $this->getEstados(array(
-                'Estado.id' => $this->request->data['Endereco']['estado_id']
-            ));
+            $espaco = $this->getEspaco($reserva['Espaco']['id']);
+           
+            $servicos = $this->getServicos();
+            
+            $estruturas = $this->getEstruturas();
+
+            $clientesNome = $this->getClientes('nome');
+
+            $clientesCpf = $this->getClientes('cpf');
+
+            $estados = $this->getEstados();
+
+            $this->set( compact('espaco', 'servicos', 'estruturas', 'clientesNome', 'clientesCpf', 'estados'));
+
+            
 
             $disabled = true;
            
@@ -309,7 +322,7 @@ class ReservasController extends AppController
                 'key' => 'danger'
             ));
 
-            $this->redirect('/espacos');
+            $this->redirect('/reservas');
         } 
     }
 
@@ -317,51 +330,37 @@ class ReservasController extends AppController
     {
         try {
 
-            $espaco = $this->getEspaco($id);
+            $reserva = $this->request->data = $this->getReserva($id);
             
-            if (empty($espaco)) {
+            if (empty($reserva)) {
                 throw new Exception("Espaço não encontrado!");
             }
 
-            $espaco['Espaco']['deleted_at'] = date('Y-m-d H:i:s');
-            $espaco['Endereco']['deleted_at'] = date('Y-m-d H:i:s');
-
-            $dataSource = $this->Espaco->getDataSource();
+            $reserva['Reserva']['deleted_at'] = date('Y-m-d H:i:s');
+          
                 
-            $dataSource->begin();
-                            
-            $response = $this->Espaco->Endereco->save($espaco);
-            
-            if ($response) {
+            if ($this->Reserva->save($reserva)) {
 
-                $dadosForm['Espaco']['endereco_id'] = $response['Endereco']['id'];
-                
-                if ($this->Espaco->save($espaco)) {
+                $this->Flash->set('Excluído com Sucesso!', array(
+                    'element' => 'bootstrap',
+                    'key' => 'success'
+                ));
 
-                    $dataSource->commit();
-                    $this->Flash->set('Excluído com Sucesso!', array(
-                        'element' => 'bootstrap',
-                        'key' => 'success'
-                    ));
-                    $this->redirect('/espacos');
+                $this->redirect('/reservas');
 
-                } else {
-                    throw new Exception("Erro ao tentar excluir o espaço!");
-                }
             } else {
-                throw new Exception("Erro ao tentar excluir o endereço!");
+                throw new Exception("Erro ao tentar excluir o espaço!");
             }
+            
 
         } catch (\Exception $e) {
-
-            $dataSource->rollback();
 
             $this->Flash->set( $e->getMessage(), array(
                 'element' => 'bootstrap',
                 'key' => 'danger'
             ));
 
-            $this->redirect('/espacos');
+            $this->redirect('/reservas');
         }
     }
 
@@ -414,7 +413,7 @@ class ReservasController extends AppController
                 'key' => 'danger'
             ));
 
-            $this->redirect('/espacos');
+            $this->redirect('/reservas');
         }
     }
 
@@ -453,7 +452,7 @@ class ReservasController extends AppController
                 'limit' => 30,
                 'order' => array(
                     'Espaco.nome' => 'asc', 
-                    'Reserva.data_inicio' => 'asc'
+                    'Reserva.data_reserva' => 'asc'
                 ),
                 'group' => array('Espaco.id')    
             );
@@ -474,7 +473,7 @@ class ReservasController extends AppController
                 'key' => 'danger'
             ));
 
-            $this->redirect('/espacos');
+            $this->redirect('/reservas');
         }
     }
 
@@ -591,7 +590,7 @@ class ReservasController extends AppController
                 'key' => 'danger'
             ));
 
-            $this->redirect('/espacos');
+            $this->redirect('/reservas');
         }
     }
 
@@ -664,7 +663,76 @@ class ReservasController extends AppController
                 'key' => 'danger'
             ));
 
-            $this->redirect('/espacos');
+            $this->redirect('/reservas');
+        }
+    }
+
+    public function reservasPdf()
+    {
+        try {
+
+            $this->layout = false;
+
+            $fields = array(
+                'Reserva.id',
+                'Reserva.data_reserva',
+                'Reserva.hora_inicio',
+                'Reserva.hora_fim',
+                'Reserva.valor'
+            );
+
+            $contain = array(
+                'Espaco' => array(
+                    'fields' => array(
+                        'nome',
+                    ),
+                    'Endereco' => array(
+                        'fields' => array(
+                            'logradouro',
+                            'numero',
+                            'bairro',
+                            'cidade',
+                        ),
+                        'Estado' => array(
+                            'fields' => 'sigla'
+                        )
+                    )
+                ),
+                'Cliente' => array(
+                    'fields' => array(
+                        'id',
+                        'nome',
+                        'cpf'
+                    )
+                ),
+            );
+
+            $conditions = array(
+                'Reserva.deleted_at' => NULL,
+            );
+
+            $order = array(
+                'Espaco.nome' => 'asc', 
+                'Reserva.data_reserva' => 'asc'
+            );
+
+            $reservas = $this->Reserva->find('all', array(
+                'fields' => $fields,
+                'contain' => $contain,
+                'conditions' => $conditions,
+                'order' => $order,
+            ));
+
+            $this->set( compact('reservas') );
+
+        } catch (\Exception $e) {
+
+            $this->Flash->set( $e->getMessage(), array(
+                'element' => 'bootstrap',
+                'key' => 'danger'
+            ));
+
+            $this->redirect('/reservas');
         }
     }
 

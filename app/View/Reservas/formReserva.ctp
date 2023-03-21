@@ -32,7 +32,8 @@
             'type' => 'Date',
             'div' => array('class' => 'col-md-12 p-0'),
             'class' => 'form-control d-inline col-md-12 p-0',
-            'required' => true
+            'required' => true,
+            'disabled' => ($actionName == 'view') ? true : false,
         ))
     ) . 
     $this->Html->div('col-md-2',
@@ -42,7 +43,8 @@
             'type' => 'Time',
             'div' => array('class' => 'col-md-12 p-0'),
             'class' => 'form-control d-inline col-md-12 p-0',
-            'required' => true
+            'required' => true,
+            'disabled' => ($actionName == 'view') ? true : false,
         ))
     ) . 
     $this->Html->div('col-md-2',
@@ -52,7 +54,8 @@
             'type' => 'Time',
             'div' => array('class' => 'col-md-12 p-0'),
             'class' => 'form-control d-inline col-md-12 p-0',
-            'required' => true
+            'required' => true,
+            'disabled' => ($actionName == 'view') ? true : false,
         ))
     ) . 
     $this->Html->div('col-md-2 mt-29',
@@ -60,7 +63,8 @@
             'type' => 'button',
             'class' => 'btn btn-secondary ',
             'onclick' => 'calcularValorReserva()',
-            'required' => true
+            'required' => true,
+            'hidden' => ($actionName == 'view') ? true : false,
         ))
     ) .
     $this->Form->hidden('Reserva.valor') . 
@@ -85,7 +89,7 @@
     $this->Html->tag('h5', 'Espaço', array(
         'class' => 'col-md-12 mb-0 pb-0'
     )) .   
-
+        
     $this->Form->hidden('Espaco.id', array(
         'value' => $espaco['Espaco']['id']
     )) .   
@@ -257,19 +261,20 @@
             $checked = false;
             $disabled = false;
 
-            if ($actionName == 'edit') {
-            
-                foreach ($this->request->data['Estrutura'] as $key => $estrut) {
+            foreach ($this->request->data['Estrutura'] as $key => $estrut) {
 
-                    if ($estrutura['Estrutura']['id'] == $estrut['id']) {
-                        $checked = true;
-                        $disabled = false;
-                        break;
-                    } else {
-                        $checked = false;
-                        $disabled = false;
-                    }
+                if ($estrutura['Estrutura']['id'] == $estrut['id']) {
+                    $checked = true;
+                    $disabled = false;
+                    break;
+                } else {
+                    $checked = false;
+                    $disabled = false;
                 }
+            }
+
+            if ($actionName == 'view') {
+                $disabled = true;
             }
         }
        
@@ -334,19 +339,20 @@
     
     foreach ($servicos as $servico) {
 
-        if ($actionName == 'edit') {
+        foreach ($this->request->data['Servico'] as $key => $servi) {
             
-            foreach ($this->request->data['Servico'] as $key => $servi) {
-                
-                if ($servico['Servico']['id'] == $servi['id']) {
-                    $checked = true;
-                    $disabled = true;
-                    break;
-                } else {
-                    $checked = false;
-                    $disabled = false;
-                }
+            if ($servico['Servico']['id'] == $servi['id']) {
+                $checked = true;
+                $disabled = true;
+                break;
+            } else {
+                $checked = false;
+                $disabled = false;
             }
+        }
+
+        if ($actionName == 'view') {
+            $disabled = true;
         }
         
         $dadosServicos[] = array(
@@ -354,6 +360,7 @@
             array(
                 $this->Form->checkbox('Servico.'.$servico['Servico']['id'], array(
                     'checked' => $checked,
+                    'disabled' => $disabled,
                     'class' => 'checkbox-servico'
                )), 
                array('class' => 'text-center')
@@ -410,6 +417,7 @@
         'div' => array('class' => 'col-md-9'),
         'class' => 'form-control mb-2 cliente-nome',
         'required' => true,
+        'disabled' => ($actionName == 'view') ? true : false,
     )) .
     $this->Form->input('Cliente.id.cpf', array(
         'type' => 'select', 
@@ -418,6 +426,7 @@
         'div' => array('class' => 'col-md-3'),
         'class' => 'form-control mb-2 cliente-cpf',
         'required' => true,
+        'disabled' => ($actionName == 'view') ? true : false,
     ));
 
     $this->assign('formFields', $formFields);
@@ -630,9 +639,6 @@
 
         horaInicio = $('#horaInicial').val()
         horaFim = $('#horaFim').val()
-
-        console.log(horaInicio)
-        console.log(horaFim)
        
         inicio = horaInicio.split(':');
         fim = horaFim.split(':');
@@ -645,12 +651,6 @@
          
         return diferencaEmHoras
     } 
-
-    function teste() {
-        console.log('teste')
-    }
-
-    
         
 </script>
 

@@ -1,0 +1,29 @@
+table{
+    border: solid 0.05cm black;
+    border-spacing: 0px;
+    width: 100%;
+    max-width: 100%;
+    background-color: transparent;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+thead{
+    background-color: none !important;
+}
+
+table th{
+    font-family: 'Times New Roman';
+    font-size: 8pt;
+    padding: 4px;
+    border: solid black;
+    border-width: 0.05cm;
+}
+
+table td{
+    font-family: 'Times New Roman';
+    font-size: 8pt;
+    padding: 3px;
+    border: solid black;
+    border-width: 0.05cm;
+}

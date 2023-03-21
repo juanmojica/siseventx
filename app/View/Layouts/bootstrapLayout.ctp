@@ -18,7 +18,7 @@
   	<body>
 		<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
 			<?php
-				echo $this->Html->link('SisEventX', '/espacos', array('class' => 'navbar-brand col-sm-3 col-md-2 mr-0')) 
+				echo $this->Html->link('SisEventX', '/', array('class' => 'navbar-brand col-sm-3 col-md-2 mr-0')) 
 			?>
 			<div class="col-md-5 text-center">
 				<?php

@@ -1,48 +1,42 @@
-# CakePHP
+# Sistema de Gestão de Reservas de Locais para Eventos
 
-[![Latest Stable Version](https://poser.pugx.org/cakephp/cakephp/v/stable.svg)](https://packagist.org/packages/cakephp/cakephp)
-[![License](https://poser.pugx.org/cakephp/cakephp/license.svg)](https://packagist.org/packages/cakephp/cakephp)
-[![Bake Status](https://secure.travis-ci.org/cakephp/cakephp.png?branch=master)](https://travis-ci.org/cakephp/cakephp)
-[![Code consistency](https://squizlabs.github.io/PHP_CodeSniffer/analysis/cakephp/cakephp/grade.svg)](https://squizlabs.github.io/PHP_CodeSniffer/analysis/cakephp/cakephp/)
+Este é um sistema web para gerenciamento de reservas de locais para eventos. Ele foi desenvolvido utilizando as seguintes tecnologias:
 
-CakePHP is a rapid development framework for PHP which uses commonly known design patterns like Active Record, Association Data Mapping, Front Controller and MVC.
-Our primary goal is to provide a structured framework that enables PHP users at all levels to rapidly develop robust web applications, without any loss to flexibility.
+- PHP 7.4
+- MySQL 8
+- Bootstrap 4.3
+- jQuery 3.3.1
+- Dompdf
 
+## Pré-requisitos
 
-## Some Handy Links
+Para rodar este sistema em sua máquina local, você precisará ter instalado:
 
-[CakePHP](https://cakephp.org) - The rapid development PHP framework
+- PHP 7.4
+- MySQL 8
+- Composer
 
-[CookBook](https://book.cakephp.org) - THE CakePHP user documentation; start learning here!
+## Instalação
 
-[API](https://api.cakephp.org) - A reference to CakePHP's classes
-
-[Plugins](https://plugins.cakephp.org) - A repository of extensions to the framework
-
-[The Bakery](https://bakery.cakephp.org) - Tips, tutorials and articles
-
-[Community Center](https://community.cakephp.org) - A source for everything community related
-
-[Training](https://training.cakephp.org) - Join a live session and get skilled with the framework
-
-[CakeFest](https://cakefest.org) - Don't miss our annual CakePHP conference
-
-[Cake Software Foundation](https://cakefoundation.org) - Promoting development related to CakePHP
+1. Clone este repositório para sua máquina local:
+    git clone https://github.com/juanmojica/siseventx.git
 
 
-## Get Support!
+2. Entre na pasta do projeto e rode o Composer para instalar as dependências:
+    cd siseventx
+    composer install
 
-[#cakephp](https://webchat.freenode.net/?channels=#cakephp) on irc.freenode.net - Come chat with us, we have cake
+3. Crie um banco de dados MySQL para o sistema, configure o `database.php` com as infomrções do seu banco e em 
+seguida e importe o arquivo `siseventx/app/Config/Schema/metadata.sql`.
 
-[Google Group](https://groups.google.com/group/cake-php) - Community mailing list and forum
+## Funcionalidades
 
-[GitHub Issues](https://github.com/cakephp/cakephp/issues) - Got issues? Please tell us!
+O SisEventX oferece as seguintes funções:
 
-[Roadmaps](https://github.com/cakephp/cakephp/wiki#roadmaps) - Want to contribute? Get involved!
+- Cadastrar locais de eventos
+- Cadastrar Estruturas para os eventos
+- Cadastrar Serviços para os eventos
+- Reservar locais para eventos
+- Gerar relatórios em PDF das reservas
 
 
-## Contributing
-
-[CONTRIBUTING.md](CONTRIBUTING.md) - Quick pointers for contributing to the CakePHP project
-
-[CookBook "Contributing" Section (2.x)](https://book.cakephp.org/2.0/en/contributing.html) [(3.x)](https://book.cakephp.org/3.0/en/contributing.html) - Version-specific details about contributing to the project

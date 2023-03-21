@@ -1,13 +1,13 @@
 <?php 
 
-    $this->extend('/Servicos/formServico');
+    $this->extend('/Reservas/formReserva');
 
-    $this->assign('title', 'Cadastrar Serviço');
+    $this->assign('title', 'Visualizar Detalhes da Reserva');
 
-    $formFields =  $this->Form->create('Servicos', array(
+    $formFields =  $this->Form->create('Reservas', array(
         'class' => 'form-row my-3',
     )); 
 
     $this->assign('formFields', $formFields);
-    
+
 ?>

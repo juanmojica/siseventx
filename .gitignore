@@ -9,6 +9,7 @@
 /dist
 /tags
 *.mo
+/vendor
 
 # IDE and editor specific files #
 #################################

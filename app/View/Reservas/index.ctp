@@ -18,7 +18,7 @@ use function PHPSTORM_META\type;
         )
     ));
 
-    $reportButton = $this->Html->link('Imprimir', '/' . $controllerName . '/report', array('class' => 'btn btn-secondary float-right mr-2', 'target' => '_blank'));
+    $reportButton = $this->Html->link('Imprimir', '/reservas/reservasPdf', array('class' => 'btn btn-secondary float-right mr-2', 'target' => '_blank'));
 
     $searchFields = $this->Form->input('Reserva.data_filtrar', array(
         'type' => 'Date',
