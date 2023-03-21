@@ -1,4 +1,7 @@
-<?php 
+<?php
+
+use function PHPSTORM_META\type;
+
     $controllerName = $this->request->params['controller'];
     
     $novoButton = $this->Js->link('Novo', '/' . $controllerName . '/listarEspacos', array(
@@ -17,12 +20,12 @@
 
     $reportButton = $this->Html->link('Imprimir', '/' . $controllerName . '/report', array('class' => 'btn btn-secondary float-right mr-2', 'target' => '_blank'));
 
-    $searchFields = $this->Form->input('Reserva.nome_filtrar', array(
-        'required' => false,
+    $searchFields = $this->Form->input('Reserva.data_filtrar', array(
+        'type' => 'Date',
+        'required' => true,
         'label' => array('text' => 'Nome', 'class' => 'sr-only'),
         'class' => 'form-control mb-2 mr-sm-2 form-sm',
         'div' => false,
-        'placeholder' => 'Nome...'
     ));
 
     $filtro = $this->Form->create('Reservas', array('class' => 'form-inline '));
@@ -52,10 +55,9 @@
 
     $titulos = array(
         array('Espaço' => array('class' => 'col-md-1')),
-        array('Endereço' => array('class' => 'col-md-1')),
-        array('Data Início' => array('class' => 'col-md-1')),    
+        array('Endereço' => array('class' => 'col-md-2')),
+        array('Data da Reserva' => array('class' => 'col-md-1')),    
         array('Hora Início' => array('class' => 'col-md-1')),    
-        array('Data Final' => array('class' => 'col-md-1')),    
         array('Hora Final' => array('class' => 'col-md-1')),    
         array('Cliente' => array('class' => 'col-md-2')),    
         array('CPF' => array('class' => 'col-md-1')),    
@@ -133,15 +135,13 @@
         {$reserva['Espaco']['Endereco']['bairro']}, 
         {$reserva['Espaco']['Endereco']['cidade']}/{$reserva['Espaco']['Endereco']['Estado']['sigla']}";
 
-        $dataInicio = date('d/m/Y', strtotime($reserva['Reserva']['data_inicio']));
-        $dataFim = date('d/m/Y', strtotime($reserva['Reserva']['data_fim']));
+        $dataReserva = date('d/m/Y', strtotime($reserva['Reserva']['data_reserva']));
         
         $dadosReservas[] = array(
             $reserva['Espaco']['nome'],
             $endereco,
-            array($dataInicio, array('class' => 'text-center')),
+            array($dataReserva, array('class' => 'text-center')),
             array($reserva['Reserva']['hora_inicio'], array('class' => 'text-center')),
-            array($dataFim, array('class' => 'text-center')),
             array($reserva['Reserva']['hora_fim'], array('class' => 'text-center')),
             $reserva['Cliente']['nome'],
             array($reserva['Cliente']['cpf'], array('class' => 'text-center')),
@@ -183,6 +183,8 @@
     );
 
     echo $paginateBar;
+
+    
 
     $this->Js->buffer('$(".active").removeClass("active");');
     $this->Js->buffer('$(".nav-item a[href$=\'' . $controllerName . '\']").addClass("active");');

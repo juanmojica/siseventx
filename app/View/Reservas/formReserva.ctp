@@ -1,5 +1,9 @@
 <?php
 
+    $controllerName = $this->request->params['controller'];
+    
+    $actionName = $this->request->params['action'];
+
     $subTotalEstruturas = 0;
 
     if (!isset($disabled)) {
@@ -22,38 +26,43 @@
     
     $this->Html->div('col-md-2 ml-0',
     
-        $this->Form->input('Reserva.data', array(
+        $this->Form->input('Reserva.data_reserva', array(
             'label' => array('text' => 'Data da Reserva', 'class' => 'control-label col-md-12 mt-2 mb-0 pl-0'),
+            'value' => date('Y-m-d'),
             'type' => 'Date',
             'div' => array('class' => 'col-md-12 p-0'),
             'class' => 'form-control d-inline col-md-12 p-0',
-            'required' => true,
-            'disabled' => false
+            'required' => true
         ))
     ) . 
-    $this->Html->div('col-md-3 ml-4',
+    $this->Html->div('col-md-2',
         $this->Form->input('Reserva.hora_inicio', array(
             'label' => array('text' => 'Horário Inicial', 'class' => 'control-label col-md-12 mt-2 mb-0 pl-0'),
-            'type' => 'time',
+            'id' => 'horaInicial',
+            'type' => 'Time',
             'div' => array('class' => 'col-md-12 p-0'),
-            'class' => 'form-control d-inline col-md-3 p-0',
-            'required' => true,
-            'disabled' => false,
-            'min' => $espaco['Espaco']['hora_inicio'],
-            'max' => $espaco['Espaco']['hora_fim'],
+            'class' => 'form-control d-inline col-md-12 p-0',
+            'required' => true
         ))
     ) . 
-    $this->Html->div('col-md-3 ',
+    $this->Html->div('col-md-2',
         $this->Form->input('Reserva.hora_fim', array(
             'label' => array('text' => 'Horário Final', 'class' => 'control-label col-md-12 mt-2 mb-0 pl-0'),
-            'type' => 'time',
+            'id' => 'horaFim',
+            'type' => 'Time',
             'div' => array('class' => 'col-md-12 p-0'),
-            'class' => 'form-control d-inline col-md-3 p-0',
-            'required' => true,
-            'disabled' => false
+            'class' => 'form-control d-inline col-md-12 p-0',
+            'required' => true
         ))
     ) . 
-
+    $this->Html->div('col-md-2 mt-29',
+        $this->Form->button('Calcular Valor', array(
+            'type' => 'button',
+            'class' => 'btn btn-secondary ',
+            'onclick' => 'calcularValorReserva()',
+            'required' => true
+        ))
+    ) .
     $this->Form->hidden('Reserva.valor') . 
 
     $this->Form->input('Reserva.valor1', array(
@@ -75,7 +84,12 @@
     /* Espaço */
     $this->Html->tag('h5', 'Espaço', array(
         'class' => 'col-md-12 mb-0 pb-0'
-    )) .         
+    )) .   
+
+    $this->Form->hidden('Espaco.id', array(
+        'value' => $espaco['Espaco']['id']
+    )) .   
+
     $this->Form->input('Espaco.nome', array(
         'label' => array('text' => 'Nome', 'class' => 'control-label mt-2 mb-0'),
         'value' => $espaco['Espaco']['nome'],
@@ -104,6 +118,7 @@
 
     $this->Form->input('Espaco.valor_hora', array(
         'label' => array('text' => 'Valor Hora', 'class' => 'control-label mt-2 mb-0'),
+        'id' => 'espacoValorHora',
         'value' => $espaco['Espaco']['valor_hora'],
         'div' => array('class' => 'col-md-2 '),
         'type' => 'text',
@@ -229,7 +244,7 @@
 
     $checked = false;
     $disabled = false;
-
+    
     foreach ($estruturas as $estrutura) {
 
         if ($estrutura['Estrutura']['tipo'] == 'BASICO') {
@@ -238,8 +253,24 @@
             $estrutura['Estrutura']['tipo'] = 'BÁSICO';
 
         } else {
+
             $checked = false;
             $disabled = false;
+
+            if ($actionName == 'edit') {
+            
+                foreach ($this->request->data['Estrutura'] as $key => $estrut) {
+
+                    if ($estrutura['Estrutura']['id'] == $estrut['id']) {
+                        $checked = true;
+                        $disabled = false;
+                        break;
+                    } else {
+                        $checked = false;
+                        $disabled = false;
+                    }
+                }
+            }
         }
        
         $dadosEstruturas[] = array(
@@ -302,11 +333,27 @@
     $checked = false;
     
     foreach ($servicos as $servico) {
+
+        if ($actionName == 'edit') {
+            
+            foreach ($this->request->data['Servico'] as $key => $servi) {
+                
+                if ($servico['Servico']['id'] == $servi['id']) {
+                    $checked = true;
+                    $disabled = true;
+                    break;
+                } else {
+                    $checked = false;
+                    $disabled = false;
+                }
+            }
+        }
         
         $dadosServicos[] = array(
 
             array(
                 $this->Form->checkbox('Servico.'.$servico['Servico']['id'], array(
+                    'checked' => $checked,
                     'class' => 'checkbox-servico'
                )), 
                array('class' => 'text-center')
@@ -379,15 +426,6 @@
         echo $this->Js->writeBuffer();
     }
     
-?>
-
-
-<?php
-
-    $controllerName = $this->request->params['controller'];
-   
-    $actionName = $this->request->params['action'];
-
     $form = $formFields;
 
     if ($actionName != 'view') {
@@ -443,6 +481,7 @@
     echo $this->Html->tag('h2', $this->fetch('title'), array(
         'class' => 'col-md-12'
     ));
+
     echo $form;
 
     $this->Js->buffer(
@@ -458,13 +497,16 @@
     .error-message {
         color: red;
     }
+
+    .mt-29 {
+        margin-top: 29px;
+    }
 </style>
 
 <script>
 
     var totalEstrutura = 0.00 
-    let totalServico = 0.00
-
+    var totalServico = 0.00
 
     $(document).ready(function() {
 
@@ -485,11 +527,7 @@
         calcularTotalEstruturas();
     });
 
-
     function calcularTotalEstruturas() {
-
-        totalEstrutura = 0.00
-        totalEstruturaaaaa = 0.00
 
         $('.checkbox-estrutura:checked').each(function() {
             
@@ -503,9 +541,9 @@
         });
 
         totalEstrutura = totalEstrutura
-        totalEstruturaaaaa = parseFloat(totalEstrutura).toFixed(2)
+        totalEstrutu = parseFloat(totalEstrutura).toFixed(2)
 
-        let total =  totalEstruturaaaaa.toString()
+        let total =  totalEstrutu.toString()
 
         total = total.replace('.', ',')
 
@@ -517,9 +555,6 @@
 
     
     function calcularTotalServicos() {
-
-        totalServico = 0.00
-        totalServicoooo = 0.00
 
         $('.checkbox-servico:checked').each(function() {
             
@@ -533,9 +568,9 @@
         });
 
         totalServico = totalServico
-        totalServicoooo = parseFloat(totalServico).toFixed(2)
+        totalServi = parseFloat(totalServico).toFixed(2)
         
-        let total =  totalServicoooo.toString()
+        let total =  totalServi.toString()
 
         total = total.replace('.', ',')
 
@@ -564,19 +599,21 @@
         let valorReserva = 0.00
         let total = 0.00
         
-        let valorEspacoHoraTexto = $('#EspacoValorHora').val()
-
+        let horas = calculaDiferencaEntreHoras()
+        
+        let valorEspacoHoraTexto = $('#espacoValorHora').val()
+       
         let valorSemLetras  = valorEspacoHoraTexto.replace(/\D/g, '');
 
         let valorNumerico = parseFloat( valorSemLetras / 100 );
 
+        if (horas > 0) {
+            valorNumerico = valorNumerico * horas
+        }
+
         let valorEspacoHora = parseFloat(valorNumerico).toFixed(2)
 
         valorReserva = (valorNumerico + totalEstrutura + totalServico).toFixed(2)
-        console.log(valorNumerico)
-        console.log(valorEspacoHora)
-        console.log(totalEstrutura)
-        console.log(valorReserva)
 
         total =  valorReserva.toString()
 
@@ -585,6 +622,32 @@
         $('#ReservaValor').val('R$ ' + valorReserva)
         $('#ReservaValor1').val('R$ ' + valorReserva)
         $('#ReservaValor2').val('R$ ' + valorReserva)
+
+        
+    }
+
+    function calculaDiferencaEntreHoras() {
+
+        horaInicio = $('#horaInicial').val()
+        horaFim = $('#horaFim').val()
+
+        console.log(horaInicio)
+        console.log(horaFim)
+       
+        inicio = horaInicio.split(':');
+        fim = horaFim.split(':');
+
+        diferencaHoras = fim[0] - inicio[0];
+        diferencaMinutos = fim[1] - inicio[1];
+        
+        totalSegundos = diferencaHoras * 3600 + diferencaMinutos * 60;
+        diferencaEmHoras =  parseInt(totalSegundos / 3600);
+         
+        return diferencaEmHoras
+    } 
+
+    function teste() {
+        console.log('teste')
     }
 
     

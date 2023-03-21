@@ -48,22 +48,22 @@
         'disabled' => $disabled,
         'placeholder' => 'R$'
     )) . 
-    $this->Html->div('col-md-3 ml-5',
+    $this->Html->div('col-md-2 ml-5',
         $this->Form->input('Espaco.hora_inicio', array(
             'label' => array('text' => 'Horário Inicial', 'class' => 'control-label col-md-12 mt-2 mb-0 pl-0'),
-            'type' => 'time',
+            'type' => 'Time',
             'div' => array('class' => 'col-md-12 p-0'),
-            'class' => 'form-control d-inline col-md-3 p-0',
+            'class' => 'form-control d-inline col-md-12 p-0',
             'required' => true,
             'disabled' => $disabled
         ))
     ) . 
-    $this->Html->div('col-md-3 ',
+    $this->Html->div('col-md-2 ',
         $this->Form->input('Espaco.hora_fim', array(
             'label' => array('text' => 'Horário Final', 'class' => 'control-label col-md-12 mt-2 mb-0 pl-0'),
-            'type' => 'time',
+            'type' => 'Time',
             'div' => array('class' => 'col-md-12 p-0'),
-            'class' => 'form-control d-inline col-md-3 p-0',
+            'class' => 'form-control d-inline col-md-12 p-0',
             'required' => true,
             'disabled' => $disabled
         ))

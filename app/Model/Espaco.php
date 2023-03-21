@@ -10,14 +10,6 @@
         public $belongsTo = array(
             'Endereco'
         );
-
-        /* public $hasMany = array(
-            'Critica'
-        );
-        
-        public $hasAndBelongsToMany = array(
-            'Ator'
-        ); */
         
         public $validate = array(
             'nome' => array(

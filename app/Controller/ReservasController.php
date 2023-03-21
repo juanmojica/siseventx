@@ -7,8 +7,7 @@ class ReservasController extends AppController
     protected $paginate = array(
         'fields' => array(
             'id',
-            'data_inicio',
-            'data_fim',
+            'data_reserva',
             'hora_inicio',
             'hora_fim',
             'valor'
@@ -38,7 +37,7 @@ class ReservasController extends AppController
             ),
         ),
         'conditions' => array('Reserva.deleted_at' => NULL),
-        'limit' => 10,
+        'limit' => 30,
         'order' => array(
             'Espaco.nome' => 'asc', 
             'Reserva.data_inicio' => 'asc'
@@ -51,12 +50,12 @@ class ReservasController extends AppController
             
             if ($this->request->is('post')) {
                 
-                $filtro = $this->request->data['Reserva']['nome_filtrar'];
+                $filtro = $this->request->data['Reserva']['data_filtrar'];
 
                 if (!empty($filtro)) {
 
                     $this->paginate['conditions']['or'] = array(
-                        'Reserva.nome LIKE' => '%' .trim($filtro) . '%'
+                        'DATE(Reserva.data_reserva)' => $filtro
                     );
                 }
             } 
@@ -80,17 +79,15 @@ class ReservasController extends AppController
     public function add($id) 
     {
         try {
-            if ($this->request->data) {
-                pr($this->request->data);exit;
-            }
             
             $espaco = $this->getEspaco($id);
-
+           
             $servicos = $this->getServicos();
             
             $estruturas = $this->getEstruturas();
 
             $clientesNome = $this->getClientes('nome');
+
             $clientesCpf = $this->getClientes('cpf');
 
             $estados = $this->getEstados();
@@ -99,45 +96,73 @@ class ReservasController extends AppController
             
             if (!empty($this->request->data)) {
 
-                $dadosForm = $this->request->data;
-            
-                if(!empty($dadosForm['Espaco']['valor_hora'])){
-                    $valor_hora = (float) str_replace(',', '.', $dadosForm['Espaco']['valor_hora']);
-                    $dadosForm['Espaco']['valor_hora'] = $valor_hora;
+                $dadosForm['Reserva'] = $this->request->data['Reserva'];
+
+                $dadosForm['Reserva']['cliente_id'] = $this->request->data['Cliente']['id']['cpf'];
+
+                $dadosForm['Reserva']['espaco_id'] = $this->request->data['Espaco']['id'];
+
+                if(!empty($dadosForm['Reserva']['valor'])){
+
+                    $valor = str_replace("R$ ", "", $dadosForm['Reserva']['valor']);
+
+                    $valor = (float) str_replace(',', '.', $valor);
+
+                    $dadosForm['Reserva']['valor'] = $valor;
                 }
-               
-                $dataSource = $this->Espaco->getDataSource();
+
+                $dataSource = $this->Reserva->getDataSource();
                 
                 $dataSource->begin();
-                                
-                $this->Espaco->Endereco->create();
 
-                $espaco = $this->Espaco->Endereco->save($dadosForm);
-                
-                if ($espaco) {
+                $this->Reserva->create();
 
-                    $dadosForm['Espaco']['endereco_id'] = $espaco['Endereco']['id'];
-                    $this->Espaco->create();
-                    
-                    if ($this->Espaco->save($dadosForm)) {
+                $reserva = $this->Reserva->save($dadosForm);
 
-                        $dataSource->commit();
-                        $this->Flash->set('Salvo com Sucesso!', array(
-                            'element' => 'bootstrap',
-                            'key' => 'success'
-                        ));
-                        $this->redirect('/espacos/add');
-
-                    } else {
-                        throw new Exception("Erro ao tentar salvar o espaço!");
-                    }
-                } else {
-                    throw new Exception("Erro ao tentar salvar o endereço!");
+                if( !$reserva ) {
+                    throw new Exception("Erro ao tentar salvar a reserva!");
                 }
+
+                $servicos = $this->request->data['Servico'];
+
+                foreach ($servicos as $key => $servico) {
+                    if ($servico == '1') {
+                        $dadosForm['Servico'][$key]['servico_id'] = $key;
+                        $dadosForm['Servico'][$key]['reserva_id'] = $reserva['Reserva']['id'];
+
+                        if( !$this->Reserva->ReservasServico->save($dadosForm['Servico'][$key]) ) {
+                            throw new Exception("Erro ao tentar salvar os servicos!");
+                        }
+                    }
+                }
+
+                $estruturas = $this->request->data['Estrutura'];
+              
+                foreach ($estruturas as $key => $estrutura) {
+                    if ($estrutura == '1') {
+                        $dadosForm['Estrutura'][$key]['estrutura_id'] = $key;
+                        $dadosForm['Estrutura'][$key]['reserva_id'] = $reserva['Reserva']['id'];
+
+                        if( !$this->Reserva->EstruturasReserva->save($dadosForm['Estrutura'][$key]) ) {
+                            throw new Exception("Erro ao tentar salvar as estruturas!");
+                        }
+                    }
+                }
+
+                $dataSource->commit();
+
+                $this->Flash->set( 'Salvo com sucesso!', array(
+                    'element' => 'bootstrap',
+                    'key' => 'success'
+                ));
+
+                $this->redirect('/reservas');
             }
         } catch (\Exception $e) {
 
-            $dataSource->rollback();
+            if (isset($dataSource)) {
+                $dataSource->rollback();
+            }
 
             if (isset($dadosForm)) {
                 $this->request->data = $dadosForm;
@@ -167,60 +192,112 @@ class ReservasController extends AppController
 
         } catch (\Exception $e) {
 
+            if (isset($dataSource)) {
+                $dataSource->rollback();
+            }
+
+            if (isset($dadosForm)) {
+                $this->request->data = $dadosForm;
+            }
+
             $this->Flash->set( $e->getMessage(), array(
                 'element' => 'bootstrap',
                 'key' => 'danger'
             ));
-
-            $this->redirect('/espacos');
         }
     }
 
     public function edit($id = null) 
     {
         try {
-
-            $estados = $this->getEstados();
-            $this->set( compact('estados'));
-
+            
             if (!empty($this->request->data)) {
 
-                $dadosForm = $this->request->data;
-                
-                if(!empty($dadosForm['Espaco']['valor_hora'])){
-                    $valor_hora = (float) str_replace(',', '.', $dadosForm['Espaco']['valor_hora']);
-                    $dadosForm['Espaco']['valor_hora'] = $valor_hora;
+                $dadosForm['Reserva'] = $this->request->data['Reserva'];
+
+                $dadosForm['Reserva']['cliente_id'] = $this->request->data['Cliente']['id']['cpf'];
+
+                $dadosForm['Reserva']['espaco_id'] = $this->request->data['Espaco']['id'];
+
+                if(!empty($dadosForm['Reserva']['valor'])){
+
+                    $valor = str_replace("R$ ", "", $dadosForm['Reserva']['valor']);
+
+                    $valor = (float) str_replace(',', '.', $valor);
+
+                    $dadosForm['Reserva']['valor'] = $valor;
                 }
 
-                $dadosForm['Espaco']['updated_at'] = date('Y-m-d H:i:s');
-                $dadosForm['Endereco']['updated_at'] = date('Y-m-d H:i:s');
-                
-                $dataSource = $this->Espaco->getDataSource();
+                $dadosForm['Reserva']['updated_at'] = date('Y-m-d H:i:s');
+
+                $dataSource = $this->Reserva->getDataSource();
                 
                 $dataSource->begin();
-                                
-                $espaco = $this->Espaco->Endereco->save($dadosForm);
-                
-                if ($espaco) {
-                    
-                    $dadosForm['Espaco']['endereco_id'] = $espaco['Endereco']['id'];
-                    
-                    if ($this->Espaco->save($dadosForm)) {
-                        $dataSource->commit();
-                        $this->Flash->set('Editado com Sucesso!', array(
-                            'element' => 'bootstrap',
-                            'key' => 'success'
-                        ));
-                        $this->redirect('/espacos');
 
-                    } else {
-                        throw new Exception("Erro ao tentar editar o espaço!");
-                    }
-                } else {
-                    throw new Exception("Erro ao tentar editar o endereço!");
+                $reserva = $this->Reserva->save($dadosForm);
+
+                if( !$reserva ) {
+                    throw new Exception("Erro ao tentar salvar a reserva!");
                 }
+
+                if (isset($this->request->data['Servico'])) {
+
+                    $servicos = $this->request->data['Servico'];
+
+                    foreach ($servicos as $key => $servico) {
+                        if ($servico == '1') {
+                            $dadosForm['Servico'][$key]['servico_id'] = $key;
+                            $dadosForm['Servico'][$key]['reserva_id'] = $reserva['Reserva']['id'];
+    
+                            if( !$this->Reserva->ReservasServico->save($dadosForm['Servico'][$key]) ) {
+                                throw new Exception("Erro ao tentar salvar os servicos!");
+                            }
+                        }
+                    }
+                }
+              
+                if (isset($this->request->data['Estrutura'])) {
+
+                    $estruturas = $this->request->data['Estrutura'];
+
+                    foreach ($estruturas as $key => $estrutura) {
+                        if ($estrutura == '1') {
+                            $dadosForm['Estrutura'][$key]['estrutura_id'] = $key;
+                            $dadosForm['Estrutura'][$key]['reserva_id'] = $reserva['Reserva']['id'];
+
+                            if( !$this->Reserva->EstruturasReserva->save($dadosForm['Estrutura'][$key]) ) {
+                                throw new Exception("Erro ao tentar salvar as estruturas!");
+                            }
+                        }
+                    }
+                }
+
+                $dataSource->commit();
+
+                $this->Flash->set( 'Salvo com sucesso!', array(
+                    'element' => 'bootstrap',
+                    'key' => 'success'
+                ));
+
+                $this->redirect('/reservas');
+
             } else {
-                $this->request->data = $this->getEspaco($id);
+
+                $reserva = $this->request->data = $this->getReserva($id);
+               
+                $espaco = $this->getEspaco($reserva['Espaco']['id']);
+                
+                $servicos = $this->getServicos();
+                
+                $estruturas = $this->getEstruturas();
+
+                $clientesNome = $this->getClientes('nome');
+
+                $clientesCpf = $this->getClientes('cpf');
+
+                $estados = $this->getEstados();
+
+                $this->set( compact('espaco', 'servicos', 'estruturas', 'clientesNome', 'clientesCpf', 'estados'));
             }
 
         } catch (\Exception $e) {
@@ -373,11 +450,12 @@ class ReservasController extends AppController
                     )
                 ),
                 'conditions' => array('Reserva.deleted_at' => NULL),
-                'limit' => 10,
+                'limit' => 30,
                 'order' => array(
                     'Espaco.nome' => 'asc', 
                     'Reserva.data_inicio' => 'asc'
-                )    
+                ),
+                'group' => array('Espaco.id')    
             );
 
             if (isset($conditions)) {
@@ -516,6 +594,80 @@ class ReservasController extends AppController
             $this->redirect('/espacos');
         }
     }
+
+    public function getReserva($id) 
+    {
+        try {
+
+            $fields = array(
+                'Reserva.id',
+                'Reserva.data_reserva',
+                'Reserva.hora_inicio',
+                'Reserva.hora_fim',
+                'Reserva.valor'
+            );
+
+            $contain = array(
+                'Espaco' => array(
+                    'fields' => array(
+                        'nome',
+                        'Espaco.nome',
+                        'telefone',
+                        'limite_participantes',
+                        'hora_inicio',
+                        'hora_fim',
+                        'valor_hora',
+                    ),
+                    'Endereco' => array(
+                        'fields' => array(
+                            'logradouro',
+                            'numero',
+                            'bairro',
+                            'cidade',
+                        ),
+                        'Estado' => array(
+                            'fields' => 'sigla'
+                        )
+                    )
+                ),
+                'Cliente' => array(
+                    'fields' => array(
+                        'id',
+                        'nome',
+                        'cpf'
+                    )
+                ),
+                'Servico' => array(
+                    'fields' => array(
+                        'id'
+                    )
+                ),
+                'Estrutura' => array(
+                    'fields' => array(
+                        'id'
+                    )
+                ),
+            );
+
+            $conditions = array('Reserva.id' => $id);
+            
+           return $this->Reserva->find('first', array(
+                'fields' => $fields,
+                'contain' => $contain,
+                'conditions' => $conditions
+            ));
+
+        } catch (\Exception $e) {
+
+            $this->Flash->set( $e->getMessage(), array(
+                'element' => 'bootstrap',
+                'key' => 'danger'
+            ));
+
+            $this->redirect('/espacos');
+        }
+    }
+
 
 }
 

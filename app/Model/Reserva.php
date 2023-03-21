@@ -18,27 +18,19 @@
         ); 
         
         public $validate = array(
-            'nome' => array(
+            'data_reserva' => array(
                 'rule' => 'notBlank', 
-                'message' => 'Campo Obrigatório'
-            ),
-            'telefone' => array(
-                'rule' => 'notBlank', 
-                'message' => 'Campo Obrigatório'
-            ),
-            'limite_participantes' => array(
-                'rule' => 'notBlank', 
-                'message' => 'Campo Obrigatório'
-            ),
-            'valor_hora' => array(
-                'rule' => array('notBlank', array('money', 'left'),),
                 'message' => 'Campo Obrigatório'
             ),
             'hora_inicio' => array(
-                'rule' => 'notBlank',
+                'rule' => 'notBlank', 
                 'message' => 'Campo Obrigatório'
             ),
             'hora_fim' => array(
+                'rule' => array('notBlank', array('money', 'left')),
+                'message' => 'Campo Obrigatório'
+            ),
+            'valor' => array(
                 'rule' => 'notBlank',
                 'message' => 'Campo Obrigatório'
             )

@@ -112,6 +112,10 @@ CREATE TABLE reservas (
 CREATE TABLE reservas_servicos (
     reserva_id INT NOT NULL,
     servico_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
     FOREIGN KEY (reserva_id) REFERENCES reservas(id),
     FOREIGN KEY (servico_id) REFERENCES servicos(id)
 );
@@ -119,6 +123,10 @@ CREATE TABLE reservas_servicos (
 CREATE TABLE estruturas_reservas (
     reserva_id INT NOT NULL,
     estrutura_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    
     FOREIGN KEY (reserva_id) REFERENCES reservas(id),
     FOREIGN KEY (estrutura_id) REFERENCES estruturas(id)
 );
